@@ -69,7 +69,7 @@ export const Item = ({
   };
 
   const handleExpand = (
-    event: React.MouseEvent<HTMLDivElement, MouseEvent>
+    event: React.MouseEvent<HTMLDivElement, MouseEvent>,
   ) => {
     event.stopPropagation();
     onExpand?.();
@@ -85,13 +85,13 @@ export const Item = ({
           onExpand?.();
         }
         // router.push(`/documents/${documentId}`);
-      }
+      },
     );
 
     toast.promise(promise, {
-      loading: "Creating a new document...",
-      success: "Document created successfully",
-      error: "Failed to create document",
+      loading: "Creating a new formula...",
+      success: "Formula created successfully",
+      error: "Failed to create formula",
     });
   };
 
@@ -100,11 +100,12 @@ export const Item = ({
   return (
     <div
       onClick={onClick}
+      onTouchStart={onClick}
       role="button"
       style={{ paddingLeft: level ? `${level * 12 + 12}px` : "12px" }}
       className={cn(
         "group min-h-[27px] text-sm py-1 pr-3 w-full hover:bg-primary/5 flex items-center text-muted-foreground font-medium",
-        active && "bg-primary/5 text-primary"
+        active && "bg-primary/5 text-primary",
       )}
     >
       {!!id && (
@@ -130,11 +131,8 @@ export const Item = ({
 
       {!!id && (
         <div className="ml-auto flex items-center gap-x-2">
-            <DropdownMenu>
-            <DropdownMenuTrigger
-              onClick={(e) => e.stopPropagation()}
-              asChild
-            >
+          <DropdownMenu>
+            <DropdownMenuTrigger onClick={(e) => e.stopPropagation()} asChild>
               <div
                 role="button"
                 className="opacity-0 group-hover:opacity-100 h-full ml-auto rounded-sm hover:bg-neutral-300 dark:hover:bg-neutral-600"

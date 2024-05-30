@@ -26,21 +26,21 @@ export const Cover = ({ url, preview }: CoverImageProps) => {
   const onRemove = async () => {
     if (url) {
       await edgestore.publicFiles.delete({
-        url: url
-      })
+        url: url,
+      });
     }
 
     removeCoverImage({
-      id: params.documentId as Id<"documents">
-    })
-  }
+      id: params.documentId as Id<"documents">,
+    });
+  };
 
   return (
     <div
       className={cn(
-        "relative w-full h-[35vh] group",
-        !url && "h-[12vh]",
-        url && "bg-muted"
+        "relative w-full h-[30vh] group",
+        !url && "h-[6vh]",
+        url && "bg-muted",
       )}
     >
       {!!url && <Image src={url} fill alt="Cover" className="object-cover" />}
@@ -72,7 +72,5 @@ export const Cover = ({ url, preview }: CoverImageProps) => {
 };
 
 Cover.Skeleton = function CoverSkeleton() {
-  return (
-   <Skeleton className="w-full h-[12vh]" />
-  );
+  return <Skeleton className="w-full h-[12vh]" />;
 };

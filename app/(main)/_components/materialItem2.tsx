@@ -13,8 +13,8 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { useMutation } from "convex/react";
-import { Leaf, LucideIcon, MoreHorizontal, Plus, Trash } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
+import { LucideIcon, MoreHorizontal, Trash } from "lucide-react";
+import { useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
 
@@ -27,11 +27,12 @@ interface ItemProps {
   level?: number;
   onExpand?: () => void;
   label: string;
+  category: { name: string; color: string; isCustom: boolean };
   onClick?: () => void;
   icon: LucideIcon;
 }
 
-export const MaterialItem = ({
+export const MaterialItem2 = ({
   id,
   label,
   onClick,
@@ -39,18 +40,22 @@ export const MaterialItem = ({
   active,
   documentIcon,
   isSearch,
+  category,
 }: ItemProps) => {
   const { user } = useUser();
   const router = useRouter();
   const remove = useMutation(api.materials.remove);
 
-  const handleDeleteMaterial = (event: React.MouseEvent<HTMLDivElement, MouseEvent>, materialId: Id<"materials">) => {
+  const handleDeleteMaterial = (
+    event: React.MouseEvent<HTMLDivElement, MouseEvent>,
+    materialId: Id<"materials">
+  ) => {
     event.stopPropagation();
 
     if (active) {
       router.push("/documents");
     }
-    
+
     setTimeout(() => {
       const promise = remove({ id: materialId });
 
@@ -60,13 +65,14 @@ export const MaterialItem = ({
         error: "Failed to delete a material",
       });
     }, 200);
-  }
+  };
 
   return (
     <div
       onClick={onClick}
+      onTouchStart={onClick}
       role="button"
-      style={{ paddingLeft: "12px" }}
+      style={{ paddingLeft: "16px" }}
       className={cn(
         "group min-h-[27px] text-sm py-1 pr-3 w-full hover:bg-primary/5 flex items-center text-muted-foreground font-medium",
         active && "bg-primary/5 text-primary"
@@ -78,11 +84,10 @@ export const MaterialItem = ({
           className="h-full rounded-sm hover:bg-neutral-300 dark:hover:bg-neutral-600 mr-1"
         ></div>
       )}
-      {documentIcon ? (
-        <div className="shrink-0 mr-2 text-[18px]">{documentIcon}</div>
-      ) : (
-        <Leaf className="shrink-0 h-[18px] mr-2 text-muted-foreground" />
-      )}
+      <span
+        className="mr-2 h-2 w-2 rounded-full"
+        style={{ backgroundColor: category.color }}
+      ></span>
       <span className="truncate">{label}</span>
       {isSearch && (
         <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
@@ -123,7 +128,7 @@ export const MaterialItem = ({
   );
 };
 
-MaterialItem.Skeleton = function ItemSkeleton({ level }: { level?: number }) {
+MaterialItem2.Skeleton = function ItemSkeleton({ level }: { level?: number }) {
   return (
     <div
       style={{

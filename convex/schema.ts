@@ -11,23 +11,52 @@ export default defineSchema({
     coverImage: v.optional(v.string()),
     icon: v.optional(v.string()),
     isPublished: v.boolean(),
+    materialsInFormula: v.optional(
+      v.array(
+        v.object({
+          material: v.id("materials"),
+          weight: v.number(),
+          dilution: v.number(),
+        }),
+      ),
+    ),
   })
     .index("by_user", ["userId"])
     .index("by_user_parent", ["userId", "parentDocument"]),
 
-  materials: defineTable({
+  accords: defineTable({
     title: v.string(),
     userId: v.string(),
     isArchived: v.boolean(),
+    childrenAccords: v.optional(v.array(v.id("accords"))),
+    content: v.optional(v.string()),
+    coverImage: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isPublished: v.boolean(),
+    materialsInFormula: v.optional(
+      v.array(
+        v.object({
+          material: v.id("materials"),
+          weight: v.number(),
+          dilution: v.number(),
+        }),
+      ),
+    ),
+  })
+    .index("by_user", ["userId"]),
+
+  materials: defineTable({
+    title: v.string(),
+    userId: v.string(),
+    category: v.object({
+      name: v.string(),
+      color: v.string(),
+      isCustom: v.boolean(),
+    }),
+    isArchived: v.boolean(),
     cas: v.optional(v.string()),
     altName: v.optional(v.string()),
-    fragnancePyramid: v.optional(v.object({
-      base: v.optional(v.string()),
-      baseMid: v.optional(v.string()),
-      mid: v.optional(v.string()),
-      midTop: v.optional(v.string()),
-      top: v.optional(v.string()),
-    })),
+    fragrancePyramid: v.optional(v.string()),
     ifralimit: v.optional(v.number()),
     dilutions: v.optional(v.array(v.number())),
     dateObtained: v.optional(v.string()),
@@ -35,5 +64,12 @@ export default defineSchema({
     coverImage: v.optional(v.string()),
     icon: v.optional(v.string()),
     isPublished: v.optional(v.boolean()),
+  }).index("by_user", ["userId"]),
+
+  categories: defineTable({
+    name: v.string(),
+    color: v.string(),
+    isCustom: v.boolean(),
+    userId: v.string(),
   }).index("by_user", ["userId"]),
 });

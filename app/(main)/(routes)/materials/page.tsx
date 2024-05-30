@@ -1,52 +1,38 @@
 "use client";
 
-import Image from "next/image";
-import { useUser } from "@clerk/clerk-react";
-import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
-import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { toast } from "sonner";
+import { useQuery } from "convex/react";
+import { columns } from "./columns";
+import { DataTable } from "@/app/(main)/_components/data-table";
+import { NewMaterialSheet } from "@/components/materials/new-material-sheet";
+import { EditMaterialSheet } from "@/components/materials/edit-material-sheet";
+import { useOnOpenMaterial } from "@/hooks/materials/use-on-open-material";
 
 const DocumentsPage = () => {
-  const { user } = useUser();
-  const create = useMutation(api.documents.create);
-
-  const onCreate = () => {
-    const promise = create({ title: "Untitled" });
-
-    toast.promise(promise, {
-      loading: "Creating a new formula...",
-      success: "Formula created successfully",
-      error: "Failed to create formula",
-    });
-  };
+  const materials = useQuery(api.materials.getSidebar);
+  const { material } = useOnOpenMaterial();
 
   return (
-    <div className="h-full flex flex-col items-center justify-center space-y-4">
-      <Image
-        src="/empty.png"
-        height="300"
-        width="300"
-        alt="empty"
-        className="dark:hidden"
-      />
+    <div className="h-full flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6 mt-14">
+      {/* <MaterialList /> */}
+      <div className="flex items-center">
+        <h1 className="font-semibold text-lg md:text-2xl">My Materials</h1>
+        <div className="ml-auto">
+          {material && <EditMaterialSheet initialData={material} />}
+          <NewMaterialSheet />
+        </div>
+      </div>
 
-      <Image
-        src="/empty-dark.png"
-        height="300"
-        width="300"
-        alt="empty"
-        className="hidden dark:block"
-      />
-      <h2 className="text-lg font-medium">
-        Welcome to {user?.firstName}&apos;s Fumez
-      </h2>
-
-      <Button onClick={onCreate}>
-        <PlusCircle className="h-4 w-4 mr-2" />
-        Create a formula
-      </Button>
+      {materials ? (
+        <DataTable
+          columns={columns}
+          data={materials}
+          filterKey="title"
+          onDelete={() => {}}
+        />
+      ) : (
+        <div>Loading...</div> // Render loading state if data is not yet loaded
+      )}
     </div>
   );
 };

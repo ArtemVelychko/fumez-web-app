@@ -1,7 +1,5 @@
 import { v } from "convex/values";
-
 import { mutation, query } from "./_generated/server";
-import { Doc, Id } from "./_generated/dataModel";
 
 export const get = query({
   handler: async (ctx) => {
@@ -19,12 +17,13 @@ export const get = query({
       .collect();
 
     return rawMaterials;
-  }
+  },
 });
 
 export const create = mutation({
   args: {
     title: v.string(),
+    cas: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -37,8 +36,54 @@ export const create = mutation({
       userId,
       isArchived: false,
       dilutions: [100],
+      category: {
+        name: "Uncategorized",
+        color: "#808080",
+        isCustom: false,
+      },
     });
-    
+
+    return rawMaterial;
+  },
+});
+
+export const createMaterial = mutation({
+  args: {
+    title: v.string(),
+    category: v.object({
+      name: v.string(),
+      color: v.string(),
+      isCustom: v.boolean(),
+    }),
+    description: v.optional(v.string()),
+    altName: v.optional(v.string()),
+    cas: v.optional(v.string()),
+    fragrancePyramid: v.optional(v.string()),
+    ifralimit: v.optional(v.number()),
+    dilutions: v.optional(v.array(v.number())),
+    dateObtained: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
+    const userId = identity.subject;
+    const newMaterial = {
+      title: args.title,
+      category: args.category,
+      description: args.description || "",
+      altName: args.altName || "",
+      cas: args.cas || "",
+      fragrancePyramid: args.fragrancePyramid || "",
+      ifralimit: args.ifralimit || 0,
+      dilutions: args.dilutions || [100],
+      dateObtained: args.dateObtained || "",
+      userId,
+      isArchived: false,
+    };
+    const rawMaterial = await ctx.db.insert("materials", newMaterial);
+
     return rawMaterial;
   },
 });
@@ -80,8 +125,6 @@ export const getSidebar = query({
       throw new Error("Not authenticated");
     }
 
-    // const userId = identity.subject;
-
     const rawMaterials = await ctx.db
       .query("materials")
       .filter((q) => q.eq(q.field("isArchived"), false))
@@ -119,14 +162,20 @@ export const remove = mutation({
   },
 });
 
-// \
-
 export const update = mutation({
   args: {
     id: v.id("materials"),
     title: v.optional(v.string()),
     cas: v.optional(v.string()),
+    category: v.optional(
+      v.object({
+        name: v.string(),
+        color: v.string(),
+        isCustom: v.boolean(),
+      }),
+    ),
     altName: v.optional(v.string()),
+    fragrancePyramid: v.optional(v.string()),
     dilutions: v.optional(v.array(v.number())),
     dateObtained: v.optional(v.string()),
     description: v.optional(v.string()),
@@ -250,5 +299,26 @@ export const removeField = mutation({
 
     const material = await ctx.db.patch(args.id, updateData);
     return material;
+  },
+});
+
+export const getSearch = query({
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
+
+    const userId = identity.subject;
+
+    const documents = await ctx.db
+      .query("materials")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .filter((q) => q.eq(q.field("isArchived"), false))
+      .order("desc")
+      .collect();
+
+    return documents;
   },
 });

@@ -42,7 +42,7 @@ const DocumentIdPage = ({ params }: MaterialIdPageProps) => {
 
   return (
     <div className="pb-40">
-      <Cover url={material.coverImage} />
+      {/* <Cover url={material.coverImage} /> */}
       <div className="md:max-w-3xl lg:max-w-4xl mx-auto">
         <MaterialForm initialData={material} />
       </div>

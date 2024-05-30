@@ -1,20 +1,16 @@
 "use client";
 
-import { ChevronsLeftRight } from "lucide-react";
-
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
 import { SignOutButton, useUser } from "@clerk/clerk-react";
-import { Sign } from "crypto";
 
 export const UserItem = () => {
   const { user } = useUser();
@@ -24,17 +20,12 @@ export const UserItem = () => {
       <DropdownMenuTrigger asChild>
         <div
           role="button"
-          className="flex item-center text-sm p-3 w-full hover:bg-primary/5"
+          className="flex rounded-full p-1 cursor-pointer mr-2"
         >
           <div className="gap-x-2 flex items-center max-w-[150px]">
-            <Avatar className="h-5 w-5">
+            <Avatar className="h-8 w-8">
               <AvatarImage src={user?.imageUrl} />
             </Avatar>
-            <span className="text-start font-medium line-clamp-1">
-              {user?.firstName}&apos;s Fumez
-            </span>
-
-            <ChevronsLeftRight className="rotate-90 ml-2 text-muted-foreground h-4 w-4" />
           </div>
         </div>
       </DropdownMenuTrigger>
@@ -57,7 +48,7 @@ export const UserItem = () => {
 
             <div className="space-y-1">
               <p className="text-sm line-clamp-1">
-                {user?.firstName}&apos;s Fumez
+                {user?.firstName}&apos;s Dashboard
               </p>
             </div>
           </div>

@@ -4,13 +4,25 @@ import Image from "next/image";
 import { useUser } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
+import { DocumentList } from "../../_components/documentList";
+import { useNewMaterial } from "@/hooks/use-new-material";
+import { Doc, Id } from "@/convex/_generated/dataModel";
+import { DataTable } from "@/app/(main)/_components/data-table";
+import { columns } from "./columns";
 
-const DocumentsPage = () => {
+interface DocumentListProps {
+  parentDocumentId?: Id<"documents">;
+  level?: number;
+  data?: Doc<"documents">[];
+}
+
+const DocumentsPage = ({ parentDocumentId }: DocumentListProps) => {
   const { user } = useUser();
   const create = useMutation(api.documents.create);
+  const { onOpen } = useNewMaterial();
 
   const onCreate = () => {
     const promise = create({ title: "Untitled" });
@@ -22,26 +34,23 @@ const DocumentsPage = () => {
     });
   };
 
+  const documents = useQuery(api.documents.getSidebar, {
+    parentDocument: parentDocumentId,
+  });
+
   return (
     <div className="h-full flex flex-col items-center justify-center space-y-4">
-      <Image
-        src="/empty.png"
-        height="300"
-        width="300"
-        alt="empty"
-        className="dark:hidden"
-      />
-
-      <Image
-        src="/empty-dark.png"
-        height="300"
-        width="300"
-        alt="empty"
-        className="hidden dark:block"
-      />
-      <h2 className="text-lg font-medium">
-        Welcome to {user?.firstName}&apos;s Fumez
-      </h2>
+      <DocumentList />
+      {documents ? (
+        <DataTable
+          columns={columns}
+          data={documents}
+          filterKey="title"
+          onDelete={() => {}}
+        />
+      ) : (
+        <div>Loading...</div> // Render loading state if data is not yet loaded
+      )}
 
       <Button onClick={onCreate}>
         <PlusCircle className="h-4 w-4 mr-2" />
