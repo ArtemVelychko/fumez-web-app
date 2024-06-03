@@ -40,11 +40,11 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import Image from "next/image";
 import { categories } from "./categories";
 
-interface Category {
-  name: string;
-  color: string;
-  isCustom: boolean;
-}
+// interface Category {
+//   name: string;
+//   color: string;
+//   isCustom: boolean;
+// }
 
 interface FormData {
   title: string;
@@ -282,10 +282,17 @@ export const NewMaterialSheet = () => {
                 type="number"
                 min={0}
                 max={100}
-                value={formData.ifralimit}
-                onChange={(e) =>
-                  handleInputChange("ifralimit", Number(e.target.value))
-                }
+                value={formData.ifralimit || ""}
+                onChange={(e) => {
+                  const value = e.target.value;
+
+                  if (value === "") {
+                    handleInputChange("ifralimit", 0);
+                  } else {
+                    handleInputChange("ifralimit", Number(value));
+                  }
+                }}
+                placeholder="IFRA Limit"
               />
             </div>
             <div>

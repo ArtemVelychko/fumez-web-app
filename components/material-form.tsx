@@ -115,16 +115,10 @@ export const MaterialForm = ({ initialData, preview }: MaterialFormProps) => {
   };
 
   return (
-    <div className="flex h-full flex-col gap-4 p-4 md:p-6">
-      <div className="space-y-2">
-        <h2 className="text-xl font-semibold">Edit Material</h2>
-        <p className="text-gray-500 dark:text-gray-400 text-xs">
-          Update the details of the material.
-        </p>
-      </div>
+    <div className="flex h-full flex-col gap-4 p-4 md:p-6 mt-16">
       <div className="pl-4 group relative">
         {/* Inputs */}
-        <div className="space-y-4 mt-10">
+        <div className="space-y-4 mt-8">
           <div>
             <Input
               value={formData.title}

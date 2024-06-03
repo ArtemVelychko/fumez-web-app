@@ -3,7 +3,7 @@
 import { api } from "@/convex/_generated/api";
 import { useQuery } from "convex/react";
 import { columns } from "./columns";
-import { DataTable } from "@/app/(main)/_components/data-table";
+import { DataTable } from "./data-table";
 import { NewMaterialSheet } from "@/components/materials/new-material-sheet";
 import { EditMaterialSheet } from "@/components/materials/edit-material-sheet";
 import { useOnOpenMaterial } from "@/hooks/materials/use-on-open-material";

@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useUser } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
@@ -10,7 +9,7 @@ import { toast } from "sonner";
 import { DocumentList } from "../../_components/documentList";
 import { useNewMaterial } from "@/hooks/use-new-material";
 import { Doc, Id } from "@/convex/_generated/dataModel";
-import { DataTable } from "@/app/(main)/_components/data-table";
+import { DataTable } from "./data-table";
 import { columns } from "./columns";
 
 interface DocumentListProps {
@@ -20,9 +19,7 @@ interface DocumentListProps {
 }
 
 const DocumentsPage = ({ parentDocumentId }: DocumentListProps) => {
-  const { user } = useUser();
   const create = useMutation(api.documents.create);
-  const { onOpen } = useNewMaterial();
 
   const onCreate = () => {
     const promise = create({ title: "Untitled" });
@@ -39,7 +36,7 @@ const DocumentsPage = ({ parentDocumentId }: DocumentListProps) => {
   });
 
   return (
-    <div className="h-full flex flex-col items-center justify-center space-y-4">
+    <div className="h-full flex flex-col items-center justify-center space-y-4 mt-5">
       <DocumentList />
       {documents ? (
         <DataTable

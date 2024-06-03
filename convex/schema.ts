@@ -6,6 +6,7 @@ export default defineSchema({
     title: v.string(),
     userId: v.string(),
     isArchived: v.boolean(),
+    childrenDocuments: v.optional(v.array(v.id("documents"))),
     parentDocument: v.optional(v.id("documents")),
     content: v.optional(v.string()),
     coverImage: v.optional(v.string()),
@@ -62,7 +63,6 @@ export default defineSchema({
     dateObtained: v.optional(v.string()),
     description: v.optional(v.string()),
     coverImage: v.optional(v.string()),
-    icon: v.optional(v.string()),
     isPublished: v.optional(v.boolean()),
   }).index("by_user", ["userId"]),
 

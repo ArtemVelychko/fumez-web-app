@@ -35,7 +35,6 @@ export const MaterialList = () => {
             label={material.title}
             category={material.category}
             icon={FileIcon}
-            documentIcon={material.icon}
             active={params.materialId === material._id}
           />
         </div>
