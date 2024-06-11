@@ -6,20 +6,18 @@ export default defineSchema({
     title: v.string(),
     userId: v.string(),
     isArchived: v.boolean(),
-    childrenDocuments: v.optional(v.array(v.id("documents"))),
     parentDocument: v.optional(v.id("documents")),
-    content: v.optional(v.string()),
-    coverImage: v.optional(v.string()),
-    icon: v.optional(v.string()),
+    note: v.optional(v.string()),
     isPublished: v.boolean(),
+    solvent: v.object({ name: v.string(), weight: v.number() }),
     materialsInFormula: v.optional(
       v.array(
         v.object({
           material: v.id("materials"),
           weight: v.number(),
           dilution: v.number(),
-        }),
-      ),
+        })
+      )
     ),
   })
     .index("by_user", ["userId"])
@@ -29,22 +27,49 @@ export default defineSchema({
     title: v.string(),
     userId: v.string(),
     isArchived: v.boolean(),
-    childrenAccords: v.optional(v.array(v.id("accords"))),
-    content: v.optional(v.string()),
-    coverImage: v.optional(v.string()),
-    icon: v.optional(v.string()),
+    isBase: v.boolean(),
+    note: v.optional(v.string()),
     isPublished: v.boolean(),
+    solvent: v.object({ name: v.string(), weight: v.number() }),
     materialsInFormula: v.optional(
       v.array(
         v.object({
           material: v.id("materials"),
           weight: v.number(),
           dilution: v.number(),
-        }),
-      ),
+        })
+      )
     ),
-  })
-    .index("by_user", ["userId"]),
+    concentration: v.optional(v.number()),
+  }).index("by_user", ["userId"]),
+
+  formulas: defineTable({
+    title: v.string(),
+    userId: v.string(),
+    isArchived: v.boolean(),
+    isBase: v.boolean(),
+    note: v.optional(v.string()),
+    isPublished: v.boolean(),
+    solvent: v.object({ name: v.string(), weight: v.number() }),
+    accordsInFormula: v.optional(
+      v.array(
+        v.object({
+          accord: v.id("accords"),
+          weight: v.number(),
+          dilution: v.number(),
+        })
+      )
+    ),
+    materialsInFormula: v.optional(
+      v.array(
+        v.object({
+          material: v.id("materials"),
+          weight: v.number(),
+          dilution: v.number(),
+        })
+      )
+    ),
+  }).index("by_user", ["userId"]),
 
   materials: defineTable({
     title: v.string(),

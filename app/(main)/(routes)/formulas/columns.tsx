@@ -1,23 +1,22 @@
 import React from "react";
-import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
-import { ChevronDown, ChevronRight } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FunctionReturnType } from "convex/server";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { Actions } from "./actions";
-import { Collapsible, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { NameAction } from "./nameAction";
+import { DataTableColumnHeader } from "../../_components/table-column-header";
 
-export type Document = {
-  _id: Id<"documents">;
+export type Formula = {
+  _id: Id<"formulas">;
   title: string;
-  parentDocument?: Id<"documents">;
+  hasChildren?: boolean;
 };
 
-export type ResponseType = FunctionReturnType<typeof api.materials.get>;
+export type ResponseType = FunctionReturnType<typeof api.formulas.get>;
 
-export const columns: ColumnDef<Document>[] = [
+export const columns: ColumnDef<Formula>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -41,27 +40,11 @@ export const columns: ColumnDef<Document>[] = [
     enableHiding: false,
   },
   {
-    header: "Expand",
-    cell: ({ row }) => (
-      <div className="flex items-center">
-        <CollapsibleTrigger asChild>
-          <Button variant="ghost" onClick={() => row.toggleExpanded()}>
-            {row.getIsExpanded() ? (
-              <ChevronDown className="h-4 w-4" />
-            ) : (
-              <ChevronRight className="h-4 w-4" />
-            )}
-          </Button>
-        </CollapsibleTrigger>
-      </div>
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
     accessorKey: "title",
-    header: "Title",
-    cell: ({ row }) => row.getValue("title"),
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Name" hideHideOption />
+    ),
+    cell: ({ row }) => <NameAction id={row.original._id} />,
   },
   {
     id: "actions",

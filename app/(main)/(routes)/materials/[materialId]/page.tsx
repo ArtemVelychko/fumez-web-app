@@ -3,11 +3,10 @@
 import { useQuery } from "convex/react";
 import { Id } from "@/convex/_generated/dataModel";
 import { api } from "@/convex/_generated/api";
-
 import { Cover } from "@/components/cover";
 import { Skeleton } from "@/components/ui/skeleton";
-
 import { MaterialForm } from "@/components/material-form";
+import { Button } from "@/components/ui/button";
 
 interface MaterialIdPageProps {
   params: {
@@ -42,8 +41,8 @@ const DocumentIdPage = ({ params }: MaterialIdPageProps) => {
 
   return (
     <div className="pb-40">
-      {/* <Cover url={material.coverImage} /> */}
       <div className="md:max-w-3xl lg:max-w-4xl mx-auto">
+        <Button>{"<-"}</Button>
         <MaterialForm initialData={material} />
       </div>
     </div>

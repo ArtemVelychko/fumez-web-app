@@ -3,24 +3,22 @@
 import { useQuery } from "convex/react";
 import { Id } from "@/convex/_generated/dataModel";
 import { api } from "@/convex/_generated/api";
-
 import { Cover } from "@/components/cover";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AccordPage } from "@/components/accordPage";
 
-import { MaterialForm } from "@/components/material-form";
-
-interface MaterialIdPageProps {
+interface DocumentIdPageProps {
   params: {
-    materialId: Id<"materials">;
+    accordId: Id<"accords">;
   };
 }
 
-const DocumentIdPage = ({ params }: MaterialIdPageProps) => {
-  const material = useQuery(api.materials.getById, {
-    materialId: params.materialId,
+const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
+  const accord = useQuery(api.accords.getAccordById, {
+    accordId: params.accordId,
   });
 
-  if (material === undefined) {
+  if (accord === undefined) {
     return (
       <div>
         <Cover.Skeleton />
@@ -36,15 +34,14 @@ const DocumentIdPage = ({ params }: MaterialIdPageProps) => {
     );
   }
 
-  if (material === null) {
+  if (document === null) {
     return <div>Document not found</div>;
   }
 
   return (
-    <div className="pb-40">
-      <Cover url={material.coverImage} />
+    <div className="pb-40 ">
       <div className="md:max-w-3xl lg:max-w-4xl mx-auto">
-        <MaterialForm initialData={material} />
+        <AccordPage initialData={accord} />
       </div>
     </div>
   );

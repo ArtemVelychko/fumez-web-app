@@ -13,7 +13,7 @@ export const NameAction = ({ id }: Props) => {
 
   return (
     <div
-      className="hover:cursor-pointer"
+      className="hover:cursor-pointer font-medium"
       onClick={() => material && onOpen(material)}
     >
       {material?.title}

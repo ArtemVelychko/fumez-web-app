@@ -266,7 +266,7 @@ export const MaterialForm = ({ initialData, preview }: MaterialFormProps) => {
                 type="number"
                 min={0}
                 max={99}
-                value={formData.ifralimit || ""}
+                value={`${formData.ifralimit}`}
                 onChange={(e) => {
                   const value = e.target.value;
 

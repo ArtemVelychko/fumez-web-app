@@ -95,7 +95,7 @@ export const getById = query({
     const rawMaterial = await ctx.db.get(args.materialId);
 
     if (!rawMaterial) {
-      throw new Error("Document not found");
+      throw new Error("Material not found");
     }
 
     if (!rawMaterial.isArchived) {
@@ -145,13 +145,13 @@ export const remove = mutation({
 
     const userId = identity.subject;
 
-    const existingDocument = await ctx.db.get(args.id);
+    const existingMaterial = await ctx.db.get(args.id);
 
-    if (!existingDocument) {
+    if (!existingMaterial) {
       throw new Error("Material not found");
     }
 
-    if (existingDocument.userId !== userId) {
+    if (existingMaterial.userId !== userId) {
       throw new Error("Unauthorized");
     }
 
@@ -160,6 +160,34 @@ export const remove = mutation({
     return material;
   },
 });
+
+export const bulkRemove = mutation({
+  args: { ids: v.array(v.id("materials")) },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
+
+    const userId = identity.subject;
+
+    for (const id of args.ids) {
+      const existingMaterial = await ctx.db.get(id);
+
+      if (!existingMaterial) {
+        throw new Error(`Material with id ${id} not found`);
+      }
+
+      if (existingMaterial.userId !== userId) {
+        throw new Error(`Unauthorized to delete material with id ${id}`);
+      }
+
+      await ctx.db.delete(id);
+    }
+  },
+});
+
 
 export const update = mutation({
   args: {
@@ -194,13 +222,13 @@ export const update = mutation({
 
     const { id, ...rest } = args;
 
-    const existingDocument = await ctx.db.get(args.id);
+    const existingMaterial = await ctx.db.get(args.id);
 
-    if (!existingDocument) {
+    if (!existingMaterial) {
       throw new Error("Not found");
     }
 
-    if (existingDocument.userId !== userId) {
+    if (existingMaterial.userId !== userId) {
       throw new Error("Unauthorized");
     }
 
@@ -221,13 +249,13 @@ export const removeCoverImage = mutation({
 
     const userId = identity.subject;
 
-    const existingDocument = await ctx.db.get(args.id);
+    const existingMaterial = await ctx.db.get(args.id);
 
-    if (!existingDocument) {
+    if (!existingMaterial) {
       throw new Error("Not found");
     }
 
-    if (existingDocument.userId !== userId) {
+    if (existingMaterial.userId !== userId) {
       throw new Error("Unauthorized");
     }
 
@@ -251,11 +279,11 @@ export const removeField = mutation({
     }
     const userId = identity.subject;
 
-    const existingDocument = await ctx.db.get(args.id);
-    if (!existingDocument) {
+    const existingMaterial = await ctx.db.get(args.id);
+    if (!existingMaterial) {
       throw new Error("Not found");
     }
-    if (existingDocument.userId !== userId) {
+    if (existingMaterial.userId !== userId) {
       throw new Error("Unauthorized");
     }
 
@@ -283,13 +311,13 @@ export const getSearch = query({
 
     const userId = identity.subject;
 
-    const documents = await ctx.db
+    const Materials = await ctx.db
       .query("materials")
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .filter((q) => q.eq(q.field("isArchived"), false))
       .order("desc")
       .collect();
 
-    return documents;
+    return Materials;
   },
 });

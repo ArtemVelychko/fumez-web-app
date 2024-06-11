@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { File } from "lucide-react";
 import { useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
 
@@ -18,8 +17,9 @@ import { api } from "@/convex/_generated/api";
 
 export const SearchCommand = () => {
   const router = useRouter();
-  const documents = useQuery(api.documents.getSearch);
+  const formulas = useQuery(api.formulas.getSearchFormulas);
   const materials = useQuery(api.materials.getSearch);
+  const accords = useQuery(api.accords.getSearchAccords);
   const [isMounted, setIsMounted] = useState(false);
 
   const toggle = useSearch((store) => store.toggle);
@@ -43,12 +43,16 @@ export const SearchCommand = () => {
   }, [toggle]);
 
   const onSelect = (group: string, id: string) => {
-    if (group === "documents") {
-      router.push(`/documents/${id}`);
+    if (group === "formulas") {
+      router.push(`/formulas/${id}`);
     }
 
     if (group === "materials") {
       router.push(`/materials/${id}`);
+    }
+
+    if (group === "accords") {
+      router.push(`/accords/${id}`);
     }
 
     onClose();
@@ -68,19 +72,14 @@ export const SearchCommand = () => {
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>
         <CommandGroup heading="Formulas">
-          {documents?.map((document) => (
+          {formulas?.map((formula) => (
             <CommandItem
-              key={document._id}
-              value={`${document._id}-${document.title}`}
-              title={document.title}
-              onSelect={() => onSelect("documents", document._id)}
+              key={formula._id}
+              value={`${formula._id}-${formula.title}`}
+              title={formula.title}
+              onSelect={() => onSelect("formulas", formula._id)}
             >
-              {document.icon ? (
-                <p className="mr-2 text-[18px]">{document.icon}</p>
-              ) : (
-                <File className="mr-2 h-4 w-4" />
-              )}
-              <span>{document.title}</span>
+              <span>{formula.title}</span>
             </CommandItem>
           ))}
         </CommandGroup>
@@ -97,6 +96,18 @@ export const SearchCommand = () => {
                 style={{ backgroundColor: material.category.color }}
               ></span>
               <span>{material.title}</span>
+            </CommandItem>
+          ))}
+        </CommandGroup>
+        <CommandGroup heading="Accords">
+          {accords?.map((accord) => (
+            <CommandItem
+              key={accord._id}
+              value={`${accord._id}-${accord.title}`}
+              title={accord.title}
+              onSelect={() => onSelect("accords", accord._id)}
+            >
+              <span>{accord.title}</span>
             </CommandItem>
           ))}
         </CommandGroup>

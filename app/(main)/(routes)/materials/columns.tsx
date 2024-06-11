@@ -1,8 +1,4 @@
-"use client";
-
-import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, Trash } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   HoverCard,
@@ -15,6 +11,7 @@ import { Actions } from "./actions";
 import { Id } from "@/convex/_generated/dataModel";
 import Image from "next/image";
 import { NameAction } from "./nameAction";
+import { DataTableColumnHeader } from "../../_components/table-column-header";
 
 export type Material = {
   _id: Id<"materials">;
@@ -53,26 +50,19 @@ export const columns: ColumnDef<Material>[] = [
   {
     accessorKey: "title",
     header: ({ column }) => (
-      <div className="flex justify-items-start items-center">
-        Name
-        <Button
-          variant="ghost"
-          className="ml-2"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          <ArrowUpDown className="h-4 w-4" />
-        </Button>
-      </div>
+      <DataTableColumnHeader column={column} title="Name" hideHideOption />
     ),
     cell: ({ row }) => {
       const id = row.original._id;
 
-      return <NameAction id={id}/>;
+      return <NameAction id={id} />;
     },
   },
   {
     accessorKey: "category.color",
-    header: "Category",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Category" />
+    ),
     cell: ({ row }) => {
       const category = row.original.category;
       if (!category) return null;
@@ -95,7 +85,9 @@ export const columns: ColumnDef<Material>[] = [
   },
   {
     accessorKey: "fragrancePyramid",
-    header: "Fragrance Pyramid",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Note" />
+    ),
     cell: ({ row }) => {
       const pyramid = row.original.fragrancePyramid;
       if (!pyramid) return null;

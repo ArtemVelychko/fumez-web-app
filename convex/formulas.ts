@@ -1,5 +1,4 @@
 import { v } from "convex/values";
-
 import { mutation, query } from "./_generated/server";
 
 export const get = query({
@@ -12,17 +11,17 @@ export const get = query({
 
     const userId = identity.subject;
 
-    const accords = await ctx.db
-      .query("accords")
+    const formulas = await ctx.db
+      .query("formulas")
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .collect();
 
-    return accords;
+    return formulas;
   },
 });
 
-export const archiveAccord = mutation({
-  args: { id: v.id("accords") },
+export const archiveFormula = mutation({
+  args: { id: v.id("formulas") },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
 
@@ -32,25 +31,25 @@ export const archiveAccord = mutation({
 
     const userId = identity.subject;
 
-    const existingAccord = await ctx.db.get(args.id);
+    const existingFormula = await ctx.db.get(args.id);
 
-    if (!existingAccord) {
+    if (!existingFormula) {
       throw new Error("Accord not found");
     }
 
-    if (existingAccord.userId !== userId) {
+    if (existingFormula.userId !== userId) {
       throw new Error("Unauthorized");
     }
 
-    const accord = await ctx.db.patch(args.id, {
+    const formula = await ctx.db.patch(args.id, {
       isArchived: true,
     });
 
-    return accord;
+    return formula;
   },
 });
 
-export const getAccordsSidebar = query({
+export const getFormulasSidebar = query({
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
 
@@ -60,17 +59,18 @@ export const getAccordsSidebar = query({
 
     const userId = identity.subject;
 
-    const accords = await ctx.db
-      .query("accords")
+    const formulas = await ctx.db
+      .query("formulas")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
       .filter((q) => q.eq(q.field("isArchived"), false))
       .order("desc")
       .collect();
 
-    return accords;
+    return formulas;
   },
 });
 
-export const createAccord = mutation({
+export const createFormula = mutation({
   args: {
     title: v.string(),
   },
@@ -83,7 +83,7 @@ export const createAccord = mutation({
 
     const userId = identity.subject;
 
-    const accord = await ctx.db.insert("accords", {
+    const formula = await ctx.db.insert("formulas", {
       title: args.title,
       userId,
       isArchived: false,
@@ -92,11 +92,11 @@ export const createAccord = mutation({
       solvent: { name: "Solvent", weight: 0 },
     });
 
-    return accord;
+    return formula;
   },
 });
 
-export const getTrashAccords = query({
+export const getTrashFormulas = query({
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
 
@@ -106,19 +106,19 @@ export const getTrashAccords = query({
 
     const userId = identity.subject;
 
-    const accords = await ctx.db
-      .query("accords")
+    const formulas = await ctx.db
+      .query("formulas")
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .filter((q) => q.eq(q.field("isArchived"), true))
       .order("desc")
       .collect();
 
-    return accords;
+    return formulas;
   },
 });
 
-export const restoreAccord = mutation({
-  args: { id: v.id("accords") },
+export const restoreFormula = mutation({
+  args: { id: v.id("formulas") },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
 
@@ -128,26 +128,26 @@ export const restoreAccord = mutation({
 
     const userId = identity.subject;
 
-    const existingAccord = await ctx.db.get(args.id);
+    const existingFormula = await ctx.db.get(args.id);
 
-    if (!existingAccord) {
+    if (!existingFormula) {
       throw new Error("Accord not found");
     }
 
-    if (existingAccord.userId !== userId) {
+    if (existingFormula.userId !== userId) {
       throw new Error("Unauthorized");
     }
 
-    const accord = await ctx.db.patch(args.id, {
+    const formula = await ctx.db.patch(args.id, {
       isArchived: false,
     });
 
-    return accord;
+    return formula;
   },
 });
 
-export const removeAccord = mutation({
-  args: { id: v.id("accords") },
+export const removeFormula = mutation({
+  args: { id: v.id("formulas") },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
 
@@ -157,24 +157,24 @@ export const removeAccord = mutation({
 
     const userId = identity.subject;
 
-    const existingAccord = await ctx.db.get(args.id);
+    const existingFormula = await ctx.db.get(args.id);
 
-    if (!existingAccord) {
+    if (!existingFormula) {
       throw new Error("Accord not found");
     }
 
-    if (existingAccord.userId !== userId) {
+    if (existingFormula.userId !== userId) {
       throw new Error("Unauthorized");
     }
 
-    const accord = await ctx.db.delete(args.id);
+    const formula = await ctx.db.delete(args.id);
 
-    return accord;
+    return formula;
   },
 });
 
-export const bulkRemoveAccords = mutation({
-  args: { ids: v.array(v.id("accords")) },
+export const bulkRemoveFormulas = mutation({
+  args: { ids: v.array(v.id("formulas")) },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
 
@@ -185,14 +185,14 @@ export const bulkRemoveAccords = mutation({
     const userId = identity.subject;
 
     for (const id of args.ids) {
-      const existingAccord = await ctx.db.get(id);
+      const existingFormula = await ctx.db.get(id);
 
-      if (!existingAccord) {
+      if (!existingFormula) {
         throw new Error(`Accord with id ${id} not found`);
       }
 
-      if (existingAccord.userId !== userId) {
-        throw new Error(`Unauthorized to delete accord with id ${id}`);
+      if (existingFormula.userId !== userId) {
+        throw new Error(`Unauthorized to delete formula with id ${id}`);
       }
 
       await ctx.db.delete(id);
@@ -200,7 +200,7 @@ export const bulkRemoveAccords = mutation({
   },
 });
 
-export const getSearchAccords = query({
+export const getSearchFormulas = query({
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
 
@@ -210,30 +210,30 @@ export const getSearchAccords = query({
 
     const userId = identity.subject;
 
-    const accords = await ctx.db
-      .query("accords")
+    const formulas = await ctx.db
+      .query("formulas")
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .filter((q) => q.eq(q.field("isArchived"), false))
       .order("desc")
       .collect();
 
-    return accords;
+    return formulas;
   },
 });
 
-export const getAccordById = query({
-  args: { accordId: v.id("accords") },
+export const getFormulaById = query({
+  args: { formulaId: v.id("formulas") },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
 
-    const accord = await ctx.db.get(args.accordId);
+    const formula = await ctx.db.get(args.formulaId);
 
-    if (!accord) {
+    if (!formula) {
       throw new Error("Accord not found");
     }
 
-    if (accord.isPublished && !accord.isArchived) {
-      return accord;
+    if (formula.isPublished && !formula.isArchived) {
+      return formula;
     }
 
     if (!identity) {
@@ -242,17 +242,17 @@ export const getAccordById = query({
 
     const userId = identity.subject;
 
-    if (accord.userId !== userId) {
+    if (formula.userId !== userId) {
       throw new Error("Unauthorized");
     }
 
-    return accord;
+    return formula;
   },
 });
 
-export const updateAccord = mutation({
+export const updateFormula = mutation({
   args: {
-    id: v.id("accords"),
+    id: v.id("formulas"),
     title: v.optional(v.string()),
     note: v.optional(v.string()),
     isPublished: v.optional(v.boolean()),
@@ -266,8 +266,16 @@ export const updateAccord = mutation({
         }),
       ),
     ),
+    accordsInFormula: v.optional(
+      v.array(
+        v.object({
+          accord: v.id("accords"),
+          weight: v.number(),
+          dilution: v.number(),
+        }),
+      ),
+    ),
     solvent: v.optional(v.object({ name: v.string(), weight: v.number() })),
-    concentration: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -280,18 +288,18 @@ export const updateAccord = mutation({
 
     const { id, ...rest } = args;
 
-    const existingAccord = await ctx.db.get(args.id);
+    const existingFormula = await ctx.db.get(args.id);
 
-    if (!existingAccord) {
+    if (!existingFormula) {
       throw new Error("Not found");
     }
 
-    if (existingAccord.userId !== userId) {
+    if (existingFormula.userId !== userId) {
       throw new Error("Unauthorized");
     }
 
-    const accord = await ctx.db.patch(args.id, { ...rest });
+    const formula = await ctx.db.patch(args.id, { ...rest });
 
-    return accord;
+    return formula;
   },
 });

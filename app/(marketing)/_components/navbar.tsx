@@ -41,20 +41,16 @@ export const Navbar = () => {
             </SignInButton>
           </>
         )}
+        <div></div>
         {isAuthenticated && !isLoading && (
-          <>
+          <div className="flex items-center justify-center gap-2">
             <Button variant="ghost" size="sm" asChild>
-              <Link href="/documents">
-                Enter Fumez
-              </Link>
+              <Link href="/materials">Enter Fumez</Link>
             </Button>
-
-            <UserButton 
-              afterSignOutUrl="/" 
-            />
-          </>
+            <UserButton afterSignOutUrl="/" />
+            <ModeToggle />
+          </div>
         )}
-        <ModeToggle />
       </div>
     </div>
   );

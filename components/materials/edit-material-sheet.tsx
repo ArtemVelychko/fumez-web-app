@@ -262,8 +262,8 @@ export const EditMaterialSheet = ({ initialData }: EditMaterialProps) => {
                     <Input
                       type="number"
                       min={0}
-                      max={99}
-                      value={formData.ifralimit || ""}
+                      max={100}
+                      value={`${formData.ifralimit}`}
                       onChange={(e) => {
                         const value = e.target.value;
 
@@ -396,7 +396,7 @@ export const EditMaterialSheet = ({ initialData }: EditMaterialProps) => {
                   </Popover>
                 </div>
 
-                <div>
+                <div className="mb-5">
                   <label className="mb-1 block text-sm font-medium text-gray-900 dark:text-white">
                     Description
                   </label>
@@ -409,16 +409,16 @@ export const EditMaterialSheet = ({ initialData }: EditMaterialProps) => {
                     // disabled={preview}
                   />
                 </div>
+                <div className="flex mt-3 justify-end">
+                  {/* <SheetClose>
+                    <Button onClick={onClose}>Close</Button>
+                  </SheetClose> */}
+                  <Button onClick={() => onRedirect(material._id)}>
+                    Go to material {"->"}
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="flex justify-between">
-            <SheetClose>
-              <Button onClick={onClose}>Close</Button>
-            </SheetClose>
-            <Button onClick={() => onRedirect(material._id)}>
-              Go to material {"->"}
-            </Button>
           </div>
         </SheetContent>
       </Sheet>

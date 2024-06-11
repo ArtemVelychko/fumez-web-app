@@ -6,29 +6,33 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Edit, MoreHorizontal, Trash } from "lucide-react";
-import { useOnOpenMaterial } from "@/hooks/materials/use-on-open-material";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
 import { Id } from "@/convex/_generated/dataModel";
+import { useRouter } from "next/navigation";
 
 type Props = {
-  id: Id<"documents">;
+  id: Id<"accords">;
 };
 
 export const Actions = ({ id }: Props) => {
-  // const { onOpen } = useOnOpenMaterial();
-  const remove = useMutation(api.documents.remove);
-  const document = useQuery(api.documents.getById, { documentId: id });
+  const remove = useMutation(api.accords.removeAccord);
+  const accord = useQuery(api.accords.getAccordById, { accordId: id });
+  const router = useRouter();
 
-  const handleDeleteMaterial = async (documentId: Id<"documents">) => {
-    const promise = remove({ id: documentId });
+  const onRedirect = (accordId: string) => {
+    router.push(`/acccords/${accordId}`);
+  };
+
+  const handleDeleteAccord = async (accordId: Id<"accords">) => {
+    const promise = remove({ id: accordId });
 
     setTimeout(() => {
       toast.promise(promise, {
-        loading: "Deleting material...",
-        success: "Material deleted successfully",
-        error: "Failed to delete a material",
+        loading: "Deleting accord...",
+        success: "Accord deleted successfully",
+        error: "Failed to delete a accord",
       });
     }, 200);
   };
@@ -43,12 +47,13 @@ export const Actions = ({ id }: Props) => {
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <DropdownMenuItem
-            disabled={!document}
+            disabled={!accord}
+            onClick={() => onRedirect(id)}
           >
             <Edit className="size-4 mr-2" />
             Edit
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => handleDeleteMaterial(id)}>
+          <DropdownMenuItem onClick={() => handleDeleteAccord(id)}>
             <Trash className="size-4 mr-2" />
             Delete
           </DropdownMenuItem>

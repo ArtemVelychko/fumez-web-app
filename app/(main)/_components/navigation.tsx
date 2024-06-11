@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "@/lib/utils";
 import {
   ChevronsLeft,
@@ -19,7 +21,6 @@ import { UserItem } from "./user-item";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Item } from "./Item";
-import { toast } from "sonner";
 import { TrashBox } from "./trash-box";
 import { useSearch } from "@/hooks/use-search";
 import { useSettings } from "@/hooks/use-settings";
@@ -28,6 +29,7 @@ import { Separator } from "@/components/ui/separator";
 import { MaterialNavbar } from "./materialNavbar";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { LeafyGreen, Sprout, FlaskRound } from "lucide-react";
 
 export const Navigation = () => {
   const params = useParams();
@@ -35,8 +37,6 @@ export const Navigation = () => {
   const search = useSearch();
   const pathname = usePathname();
   const isMobile = useMediaQuery("(max-width: 768px)");
-
-  const createFormula = useMutation(api.documents.create);
 
   const isResizingRef = useRef(false);
   const sideBarRef = useRef<ElementRef<"aside">>(null);
@@ -155,7 +155,7 @@ export const Navigation = () => {
       <aside
         ref={sideBarRef}
         className={cn(
-          "group/sidebar h-full bg-gray-100/40 overflow-y-auto relative flex w-60 flex-col z-[99999] border-b",
+          "group/sidebar h-full bg-secondary overflow-y-auto relative flex w-60 flex-col z-[99999] border-b",
           isResetting && "transition-all ease-in-out duration-300",
           isMobile && "w-0"
         )}
@@ -170,7 +170,10 @@ export const Navigation = () => {
             role="button"
             size="icon"
             variant="outline"
-            className={cn("ml-auto h-8 w-8", isMobile && "opacity-100")}
+            className={cn(
+              "ml-auto h-8 w-8 text-muted-foreground transition-transform transform hover:scale-110 hover:rounded-md hover:bg-gray-100/40 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-gray-50",
+              isMobile && "opacity-100"
+            )}
           >
             <ChevronsLeft className="h-6 w-6" />
           </Button>
@@ -178,48 +181,51 @@ export const Navigation = () => {
         <div className="mt-4">
           <Item label="Search" icon={Search} isSearch onClick={search.onOpen} />
           <Item label="Settings" icon={Settings} onClick={settings.onOpen} />
-          <Separator className="mt-4 mb-2" />
+          <Separator className="mt-4" />
         </div>
 
         <div>
-          <div className="grid items-start px-4 text-sm font-medium">
+          <div className="grid items-start px-3 my-4 text-sm font-medium gap-2">
             <Link
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50",
+                "flex items-center rounded-lg px-3 py-2 text-gray-500 transition-all hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-50",
                 {
-                  "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50":
+                  "bg-gray-300 text-gray-900 dark:bg-gray-600 dark:text-gray-50":
                     pathname.startsWith("/materials"),
                 }
               )}
               href="/materials"
             >
-              My Materials
+              <LeafyGreen className="size-4 mr-2"/>
+              Materials
             </Link>
 
             <Link
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50",
+                "flex items-center rounded-lg px-3 py-2 text-gray-500 transition-all hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-50",
                 {
-                  "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50":
-                    pathname === "/accords",
+                  "bg-gray-300 text-gray-900 dark:bg-gray-600 dark:text-gray-50":
+                    pathname.startsWith("/accords"),
                 }
               )}
               href="/accords"
             >
-              My Accords
+              <Sprout className="size-4 mr-2" />
+              Accords | Bases
             </Link>
 
             <Link
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50 mb-2",
+                "flex items-center rounded-lg px-3 py-2 text-gray-500 transition-all hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-50",
                 {
-                  "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50":
-                    pathname === "/documents",
+                  "bg-gray-300 text-gray-900 dark:bg-gray-600 dark:text-gray-50":
+                    pathname.startsWith("/formulas"),
                 }
               )}
-              href="/documents"
+              href="/formulas"
             >
-              My Formulas
+              <FlaskRound className="size-4 mr-2" />
+              Formulas
             </Link>
           </div>
         </div>
@@ -248,7 +254,7 @@ export const Navigation = () => {
       <div
         ref={navBarRef}
         className={cn(
-          "absolute h-14 h-[60px] top-0 z-[99999] left-60 w-[calc(100%-240px)] border-b bg-background flex justify-end items-center",
+          "absolute h-[60px] top-0 z-[99999] left-60 w-[calc(100%-240px)] border-b bg-background flex justify-end items-center",
           isResetting && "transition-all ease-in-out duration-300",
           isMobile && "left-0 w-full",
           isCollapsed && "justify-between"
@@ -259,11 +265,10 @@ export const Navigation = () => {
             role="button"
             onClick={resetWidth}
             size="icon"
-            className="ml-5 h-6 w-6 text-muted-foreground hover:outline hover:rounded-md"
+            className="ml-5 h-6 w-6 text-muted-foreground transition-transform transform hover:scale-110 hover:rounded-md hover:bg-gray-100/40 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-gray-50"
           />
         )}
-        <UserItem />
-        {/* {navbarPicker()} */}
+        {((isMobile && isCollapsed) || !isMobile) && <UserItem />}
       </div>
     </>
   );
