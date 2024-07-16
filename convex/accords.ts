@@ -62,6 +62,7 @@ export const getAccordsSidebar = query({
 
     const accords = await ctx.db
       .query("accords")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
       .filter((q) => q.eq(q.field("isArchived"), false))
       .order("desc")
       .collect();
@@ -262,6 +263,7 @@ export const updateAccord = mutation({
         v.object({
           material: v.id("materials"),
           weight: v.number(),
+          ifralimit: v.number(),
           dilution: v.number(),
         }),
       ),
@@ -293,5 +295,41 @@ export const updateAccord = mutation({
     const accord = await ctx.db.patch(args.id, { ...rest });
 
     return accord;
+  },
+});
+
+export const duplicateAccord = mutation({
+  args: { id: v.id("accords") },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
+
+    const userId = identity.subject;
+    const existingAccord = await ctx.db.get(args.id);
+
+    if (!existingAccord) {
+      throw new Error("Accord not found");
+    }
+
+    if (existingAccord.userId !== userId) {
+      throw new Error("Unauthorized");
+    }
+
+    // Create a new object without _id and createdAt
+    const { _id, _creationTime, ...accordDataToCopy } = existingAccord;
+
+    const newAccord = {
+      ...accordDataToCopy,
+      title: `${existingAccord.title} (copy)`,
+      isArchived: false,
+      isPublished: false,
+      userId, // Ensure the new accord is associated with the current user
+    };
+
+    const duplicatedAccord = await ctx.db.insert("accords", newAccord);
+
+    return duplicatedAccord;
   },
 });

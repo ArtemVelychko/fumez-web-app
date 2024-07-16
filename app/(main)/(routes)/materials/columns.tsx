@@ -18,7 +18,7 @@ export type Material = {
   title: string;
   category: { name: string; color: string; isCustom: boolean };
   cas?: string;
-  fragrancePyramid?: string | undefined;
+  fragrancePyramid?: string[];
   dateObtained?: string;
 };
 
@@ -59,7 +59,8 @@ export const columns: ColumnDef<Material>[] = [
     },
   },
   {
-    accessorKey: "category.color",
+    id: "category",
+    accessorFn: (row) => row.category.name,
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Category" />
     ),
@@ -69,48 +70,75 @@ export const columns: ColumnDef<Material>[] = [
 
       const { name, color } = category;
       return (
-        <div className="flex items-center space-x-2 text-xs">
-          <HoverCard>
-            <HoverCardTrigger>
-              <div
-                className="w-4 h-4 rounded-full"
-                style={{ backgroundColor: color }}
-              ></div>
-            </HoverCardTrigger>
-            <HoverCardContent className="text-sm">{name}</HoverCardContent>
-          </HoverCard>
+        <div className="flex items-center space-x-2">
+          <div
+            className="w-3 h-3 rounded-full"
+            style={{ backgroundColor: color }}
+          />
+          <span>{name}</span>
         </div>
       );
+    },
+    filterFn: (row, id, value: string[]) => {
+      const categoryName = row.getValue(id) as string;
+      return value.includes(categoryName);
     },
   },
   {
     accessorKey: "fragrancePyramid",
+    accessorFn: (row) => row.fragrancePyramid,
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Note" />
+      <DataTableColumnHeader column={column} title="Notes" />
     ),
+    filterFn: (row, id, value: string[]) => {
+      const pyramidValues = row.getValue(id) as string[];
+      return value.some(v => pyramidValues.includes(v));
+    },
     cell: ({ row }) => {
-      const pyramid = row.original.fragrancePyramid;
-      if (!pyramid) return null;
+      const pyramidValues = row.original.fragrancePyramid;
+      if (!pyramidValues || pyramidValues.length === 0) return null;
+
+      const pyramidLevels = [
+        { value: "top", src: "/pyramid-top.svg", tooltip: "Top" },
+        { value: "heart", src: "/pyramid-mid.svg", tooltip: "Heart" },
+        { value: "base", src: "/pyramid-base.svg", tooltip: "Base" },
+      ];
+
+      const selectedLevels = pyramidLevels.filter((level) =>
+        pyramidValues.includes(level.value)
+      );
+
+      const tooltipText =
+        selectedLevels.length > 1
+          ? selectedLevels.map((level) => level.tooltip).join(" / ") + " Note"
+          : selectedLevels.map((level) => level.tooltip).join(" / ") + " Note";
 
       return (
-        <div className="flex items-center space-x-2 text-xs">
+        <div className="flex items-center space-x-1">
           <HoverCard>
             <HoverCardTrigger>
-              <div>
-                <Image
-                  alt="top note"
-                  height="24"
-                  width="24"
-                  src="/pyramidTop.svg"
-                />
+              <div className="flex items-center space-x-1">
+                {selectedLevels.map((level, index) => (
+                  <div key={index} className="size-5">
+                    <Image
+                      alt={tooltipText}
+                      height={24}
+                      width={24}
+                      src={level.src}
+                    />
+                  </div>
+                ))}
               </div>
             </HoverCardTrigger>
-            <HoverCardContent className="text-sm">Top Note</HoverCardContent>
+            <HoverCardContent className="text-sm">
+              {tooltipText}
+            </HoverCardContent>
           </HoverCard>
         </div>
       );
     },
   },
+
   {
     id: "actions",
     header: "Actions",

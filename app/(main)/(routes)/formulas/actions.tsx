@@ -40,16 +40,14 @@ export const Actions = ({ id }: Props) => {
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger>
-          <Button variant="ghost" className="size-8 p-0">
-            <MoreHorizontal className="size-4" />
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8 p-0">
+            <span className="sr-only">Open menu</span>
+            <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          <DropdownMenuItem
-            disabled={!formula}
-            onClick={() => onRedirect(id)}
-          >
+          <DropdownMenuItem disabled={!formula} onClick={() => onRedirect(id)}>
             <Edit className="size-4 mr-2" />
             Edit
           </DropdownMenuItem>

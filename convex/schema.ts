@@ -2,27 +2,6 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
-  documents: defineTable({
-    title: v.string(),
-    userId: v.string(),
-    isArchived: v.boolean(),
-    parentDocument: v.optional(v.id("documents")),
-    note: v.optional(v.string()),
-    isPublished: v.boolean(),
-    solvent: v.object({ name: v.string(), weight: v.number() }),
-    materialsInFormula: v.optional(
-      v.array(
-        v.object({
-          material: v.id("materials"),
-          weight: v.number(),
-          dilution: v.number(),
-        })
-      )
-    ),
-  })
-    .index("by_user", ["userId"])
-    .index("by_user_parent", ["userId", "parentDocument"]),
-
   accords: defineTable({
     title: v.string(),
     userId: v.string(),
@@ -35,6 +14,7 @@ export default defineSchema({
       v.array(
         v.object({
           material: v.id("materials"),
+          ifralimit: v.number(),
           weight: v.number(),
           dilution: v.number(),
         })
@@ -82,7 +62,7 @@ export default defineSchema({
     isArchived: v.boolean(),
     cas: v.optional(v.string()),
     altName: v.optional(v.string()),
-    fragrancePyramid: v.optional(v.string()),
+    fragrancePyramid: v.optional(v.array(v.string())),
     ifralimit: v.optional(v.number()),
     dilutions: v.optional(v.array(v.number())),
     dateObtained: v.optional(v.string()),

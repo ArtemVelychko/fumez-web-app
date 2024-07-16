@@ -21,12 +21,11 @@ import {
   Plus,
   Trash,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
 
 interface ItemProps {
-  id?: Id<"documents">;
+  id?: Id<"formulas">;
   documentIcon?: string;
   active?: boolean;
   expanded?: boolean;
@@ -51,8 +50,7 @@ export const Item = ({
   expanded,
 }: ItemProps) => {
   const { user } = useUser();
-  const create = useMutation(api.documents.create);
-  const archive = useMutation(api.documents.archive);
+  const archive = useMutation(api.formulas.archiveFormula);
 
   const onArchive = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     event.stopPropagation();
@@ -72,26 +70,6 @@ export const Item = ({
   ) => {
     event.stopPropagation();
     onExpand?.();
-  };
-
-  const onCreate = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    event.stopPropagation();
-    if (!id) return;
-
-    const promise = create({ title: "Untitled", parentDocument: id }).then(
-      (documentId) => {
-        if (!expanded) {
-          onExpand?.();
-        }
-        // router.push(`/documents/${documentId}`);
-      },
-    );
-
-    toast.promise(promise, {
-      loading: "Creating a new formula...",
-      success: "Formula created successfully",
-      error: "Failed to create formula",
-    });
   };
 
   const ChevronIcon = expanded ? ChevronDown : ChevronRight;
@@ -155,13 +133,6 @@ export const Item = ({
               </div>
             </DropdownMenuContent>
           </DropdownMenu>
-          <div
-            role="button"
-            onClick={onCreate}
-            className="opacity-0 group-hover:opacity-100 h-full ml-auto rounded-sm hover:bg-neutral-300 dark:hover:bg-neutral-600"
-          >
-            <Plus className="h-4 w-4 text-muted-foreground" />
-          </div>
         </div>
       )}
     </div>

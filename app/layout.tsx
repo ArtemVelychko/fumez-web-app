@@ -10,18 +10,18 @@ import { EdgeStoreProvider } from "@/lib/edgestore";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Fumz",
+  title: "PureFumez",
   description: "Perfumers workspace",
   icons: [
     {
       media: "(prefers-color-scheme: light)",
-      url: "/nose.svg",
-      href: "/nose.svg",
+      url: "/icon.ico",
+      href: "/icon.ico",
     },
     {
       media: "(prefers-color-scheme: dark)",
-      url: "/nose-light.svg",
-      href: "/nose-light.svg",
+      url: "/icon.ico",
+      href: "/icon.ico",
     },
   ],
 };

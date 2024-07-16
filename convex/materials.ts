@@ -57,7 +57,7 @@ export const createMaterial = mutation({
     description: v.optional(v.string()),
     altName: v.optional(v.string()),
     cas: v.optional(v.string()),
-    fragrancePyramid: v.optional(v.string()),
+    fragrancePyramid: v.optional(v.array(v.string())),
     ifralimit: v.optional(v.number()),
     dilutions: v.optional(v.array(v.number())),
     dateObtained: v.optional(v.string()),
@@ -74,7 +74,7 @@ export const createMaterial = mutation({
       description: args.description || "",
       altName: args.altName || "",
       cas: args.cas || "",
-      fragrancePyramid: args.fragrancePyramid || "",
+      fragrancePyramid: args.fragrancePyramid || [],
       ifralimit: args.ifralimit || 0,
       dilutions: args.dilutions || [100],
       dateObtained: args.dateObtained || "",
@@ -124,8 +124,11 @@ export const getSidebar = query({
       throw new Error("Not authenticated");
     }
 
+    const userId = identity.subject;
+
     const rawMaterials = await ctx.db
       .query("materials")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
       .filter((q) => q.eq(q.field("isArchived"), false))
       .order("desc")
       .collect();
@@ -203,7 +206,7 @@ export const update = mutation({
     ),
     ifralimit: v.optional(v.number()),
     altName: v.optional(v.string()),
-    fragrancePyramid: v.optional(v.string()),
+    fragrancePyramid: v.optional(v.array(v.string())),
     dilutions: v.optional(v.array(v.number())),
     dateObtained: v.optional(v.string()),
     description: v.optional(v.string()),

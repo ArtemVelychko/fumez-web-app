@@ -5,7 +5,6 @@ import { useConvexAuth } from "convex/react";
 import { redirect } from "next/navigation";
 import { Navigation } from "./_components/navigation";
 import { SearchCommand } from "@/components/search-command";
-import { Header } from "./_components/header";
 
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading } = useConvexAuth();

@@ -49,6 +49,8 @@ const DocumentsPage = () => {
             const ids = rows.map((row) => row.original._id);
             handleDelete(ids);
           }}
+          categoryColumn="category"
+          fragrancePyramidColumn="fragrancePyramid"
         />
       ) : (
         <Spinner />

@@ -18,39 +18,31 @@ export const Navbar = () => {
   return (
     <div
       className={cn(
-        "z-50 bg-background fixed top-0 flex items-center w-full p-6",
+        "z-50 bg-background fixed top-0 w-full p-6",
         scrolled && "border-b shadow-sm"
       )}
     >
-      <Logo />
-      <div className="md:ml-auto md:justify-end justify-between w-full flex items-center gap-x-2">
-        {isLoading && (
-          <p>
-            <Spinner />
-          </p>
-        )}
-        {!isAuthenticated && !isLoading && (
-          <>
-            <SignInButton mode="modal">
-              <Button variant="ghost" size="sm">
-                Log In
-              </Button>
-            </SignInButton>
-            <SignInButton mode="modal">
-              <Button size={"sm"}>Get Fumez free</Button>
-            </SignInButton>
-          </>
-        )}
-        <div></div>
-        {isAuthenticated && !isLoading && (
-          <div className="flex items-center justify-center gap-2">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/materials">Enter Fumez</Link>
-            </Button>
-            <UserButton afterSignOutUrl="/" />
-            <ModeToggle />
-          </div>
-        )}
+      <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <Logo />
+        <div className="flex items-center gap-x-2">
+          {isLoading && <Spinner />}
+          {!isAuthenticated && !isLoading && (
+            <>
+              <SignInButton mode="modal">
+                <Button variant="ghost" size="sm">
+                  Log in
+                </Button>
+              </SignInButton>
+              <SignInButton mode="modal">
+                <Button size="sm">Sign up</Button>
+              </SignInButton>
+            </>
+          )}
+          {isAuthenticated && !isLoading && (
+              <UserButton afterSignOutUrl="/" />
+          )}
+          <ModeToggle />
+        </div>
       </div>
     </div>
   );

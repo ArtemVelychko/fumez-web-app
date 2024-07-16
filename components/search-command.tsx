@@ -71,18 +71,6 @@ export const SearchCommand = () => {
       <CommandInput placeholder={"Search..."} />
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>
-        <CommandGroup heading="Formulas">
-          {formulas?.map((formula) => (
-            <CommandItem
-              key={formula._id}
-              value={`${formula._id}-${formula.title}`}
-              title={formula.title}
-              onSelect={() => onSelect("formulas", formula._id)}
-            >
-              <span>{formula.title}</span>
-            </CommandItem>
-          ))}
-        </CommandGroup>
         <CommandGroup heading="Materials">
           {materials?.map((material) => (
             <CommandItem
@@ -108,6 +96,18 @@ export const SearchCommand = () => {
               onSelect={() => onSelect("accords", accord._id)}
             >
               <span>{accord.title}</span>
+            </CommandItem>
+          ))}
+        </CommandGroup>
+        <CommandGroup heading="Formulas">
+          {formulas?.map((formula) => (
+            <CommandItem
+              key={formula._id}
+              value={`${formula._id}-${formula.title}`}
+              title={formula.title}
+              onSelect={() => onSelect("formulas", formula._id)}
+            >
+              <span>{formula.title}</span>
             </CommandItem>
           ))}
         </CommandGroup>

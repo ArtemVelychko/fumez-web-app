@@ -18,18 +18,18 @@ import { useParams, usePathname } from "next/navigation";
 import { ElementRef, useEffect, useRef, useState } from "react";
 import { useMediaQuery } from "usehooks-ts";
 import { UserItem } from "./user-item";
-import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
 import { Item } from "./Item";
 import { TrashBox } from "./trash-box";
 import { useSearch } from "@/hooks/use-search";
 import { useSettings } from "@/hooks/use-settings";
 import { Navbar } from "./navbar";
 import { Separator } from "@/components/ui/separator";
-import { MaterialNavbar } from "./materialNavbar";
+import { MaterialNavbar } from "./material-navbar";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { LeafyGreen, Sprout, FlaskRound } from "lucide-react";
+import { Beaker } from "lucide-react";
+import { UserButton } from "@clerk/clerk-react";
 
 export const Navigation = () => {
   const params = useParams();
@@ -129,12 +129,8 @@ export const Navigation = () => {
 
   const navbarPicker = () => {
     switch (true) {
-      case !!params.documentId:
-        return <Navbar isCollapsed={isCollapsed} onResetWidth={resetWidth} />;
-      case !!params.materialId:
-        return (
-          <MaterialNavbar isCollapsed={isCollapsed} onResetWidth={resetWidth} />
-        );
+      case !!params.formulaId:
+        return <Navbar isCollapsed={isCollapsed} onResetWidth={resetWidth} isMobile={isMobile} />;
       default:
         return (
           <nav className="bg-transparent px-3 py-2 w-full">
@@ -162,8 +158,8 @@ export const Navigation = () => {
       >
         <div className="flex h-[60px] items-center border-b px-6">
           <Link className="flex items-center gap-2 font-semibold" href="#">
-            <Leaf className="h-6 w-6" />
-            <span>My dashboard</span>
+            <Beaker className="h-8 w-8 text-primary" />
+            <span className="font-bold text-lg">purefumez</span>
           </Link>
           <Button
             onClick={collapse}
@@ -260,15 +256,7 @@ export const Navigation = () => {
           isCollapsed && "justify-between"
         )}
       >
-        {isCollapsed && (
-          <MenuIcon
-            role="button"
-            onClick={resetWidth}
-            size="icon"
-            className="ml-5 h-6 w-6 text-muted-foreground transition-transform transform hover:scale-110 hover:rounded-md hover:bg-gray-100/40 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-gray-50"
-          />
-        )}
-        {((isMobile && isCollapsed) || !isMobile) && <UserItem />}
+        <Navbar isCollapsed={isCollapsed} onResetWidth={resetWidth} isMobile={isMobile}/>
       </div>
     </>
   );

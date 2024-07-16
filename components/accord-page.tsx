@@ -2,7 +2,7 @@ import { ElementRef, useEffect, useRef, useState } from "react";
 import { api } from "@/convex/_generated/api";
 import { Doc, Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { CirclePlusIcon, X } from "lucide-react";
 import { useMutation, useQuery } from "convex/react";
 import TextareaAutosize from "react-textarea-autosize";
 import {
@@ -38,28 +38,44 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "./ui/switch";
+import { cn } from "@/lib/utils";
+import React from "react";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "./ui/hover-card";
+import Image from "next/image";
 
-interface FormulaProps {
-  initialData: Doc<"formulas">;
+interface ToolbarProps {
+  initialData: Doc<"accords">;
   preview?: boolean;
 }
 
-export const FormulaPage = ({ initialData, preview }: FormulaProps) => {
+type MaterialInFormula = {
+  material: Id<"materials">;
+  weight: number;
+  ifralimit: number;
+  dilution: number;
+};
+
+const roundToThousandths = (num: number): number => {
+  return Math.round(num * 1000) / 1000;
+};
+
+const pyramidLevels = [
+  { value: "top", src: "/pyramid-top.svg", tooltip: "Top" },
+  { value: "heart", src: "/pyramid-mid.svg", tooltip: "Heart" },
+  { value: "base", src: "/pyramid-base.svg", tooltip: "Base" },
+];
+
+export const AccordPage = ({ initialData, preview }: ToolbarProps) => {
   const inputRef = useRef<ElementRef<"textarea">>(null);
-  const update = useMutation(api.formulas.updateFormula);
+  const update = useMutation(api.accords.updateAccord);
   const materials = useQuery(api.materials.getSidebar);
-  const accords = useQuery(api.accords.getAccordsSidebar);
 
   const [isEditing, setIsEditing] = useState(false);
   const [value, setValue] = useState(initialData.title);
@@ -69,30 +85,21 @@ export const FormulaPage = ({ initialData, preview }: FormulaProps) => {
   const [dilutionScaleOpen, setDilutionScaleOpen] = useState(false);
   const [dilutionScaleValue, setDilutionScaleValue] = useState<string>("");
   const [solventWeight, setSolventWeight] = useState<number>(
-    initialData.solvent?.weight || 0
+    roundToThousandths(initialData.solvent?.weight || 0)
   );
   const [materialsInFormula, setMaterialsInFormula] = useState<
-    {
-      material: Id<"materials">;
-      weight: number;
-      dilution: number;
-    }[]
-  >(initialData.materialsInFormula ?? []);
-  const [accordsInFormula, setAccordsInFormula] = useState<
-    {
-      accord: Id<"accords">;
-      weight: number;
-      dilution: number;
-    }[]
-  >(initialData.accordsInFormula ?? []);
-  const [note, setNote] = useState(initialData.note) || "";
+    MaterialInFormula[]
+  >(
+    (initialData.materialsInFormula ?? []).map((m) => ({
+      ...m,
+      weight: roundToThousandths(m.weight),
+    }))
+  );
+  const [note, setNote] = useState(initialData.note || "");
+  const [isBase, setIsBase] = useState(initialData.isBase);
 
   const materialsToAdd = materials?.filter(
     (material) => !materialsInFormula.some((m) => m.material === material._id)
-  );
-
-  const accordsToAdd = accords?.filter(
-    (accord) => !accordsInFormula.some((a) => a.accord === accord._id)
   );
 
   const enableInput = () => {
@@ -131,29 +138,15 @@ export const FormulaPage = ({ initialData, preview }: FormulaProps) => {
       {
         material: material._id,
         weight: 0,
+        ifralimit: material.ifralimit || 0,
         dilution: material.dilutions?.[0] || 100,
-      },
-    ]);
-  };
-
-  const addAccord = (accord: Doc<"accords">) => {
-    if (accordsInFormula.some((a) => a.accord === accord._id)) {
-      return;
-    }
-
-    setAccordsInFormula([
-      ...accordsInFormula,
-      {
-        accord: accord._id,
-        weight: 0,
-        dilution: accord.concentration || 100,
       },
     ]);
   };
 
   const updateMaterialWeight = (index: number, weight: number) => {
     const updatedMaterials = [...materialsInFormula];
-    updatedMaterials[index].weight = weight;
+    updatedMaterials[index].weight = roundToThousandths(weight);
     setMaterialsInFormula(updatedMaterials);
   };
 
@@ -163,71 +156,39 @@ export const FormulaPage = ({ initialData, preview }: FormulaProps) => {
     setMaterialsInFormula(updatedMaterials);
   };
 
-  const updateAccordWeight = (index: number, weight: number) => {
-    const updatedAccords = [...accordsInFormula];
-    updatedAccords[index].weight = weight;
-    setAccordsInFormula(updatedAccords);
-  };
-
-  const updateAccordDilution = (index: number, dilution: number) => {
-    const updatedAccords = [...accordsInFormula];
-    updatedAccords[index].dilution = dilution;
-    setAccordsInFormula(updatedAccords);
-  };
-
   const removeMaterial = (index: number) => {
     const updatedMaterials = [...materialsInFormula];
     updatedMaterials.splice(index, 1);
     setMaterialsInFormula(updatedMaterials);
   };
 
-  const removeAccord = (index: number) => {
-    const updatedAccords = [...accordsInFormula];
-    updatedAccords.splice(index, 1);
-    setAccordsInFormula(updatedAccords);
-  };
-
-  const totalMaterialWeight = materialsInFormula.reduce(
-    (sum, selectedMaterial) => sum + selectedMaterial.weight,
-    0
+  const totalMaterialWeight = roundToThousandths(
+    materialsInFormula.reduce((sum, material) => sum + material.weight, 0)
   );
 
-  const totalAccordWeight = accordsInFormula.reduce(
-    (sum, selectedAccord) => sum + selectedAccord.weight,
-    0
-  );
-
-  const totalWeight = totalMaterialWeight + totalAccordWeight + solventWeight;
+  const totalWeight = roundToThousandths(totalMaterialWeight + solventWeight);
 
   const finalDilution =
     totalWeight > 0
-      ? ((materialsInFormula.reduce(
-          (sum, selectedMaterial) =>
-            sum + selectedMaterial.weight * (selectedMaterial.dilution / 100),
-          0
-        ) +
-          accordsInFormula.reduce(
-            (sum, selectedAccord) =>
-              sum + selectedAccord.weight * (selectedAccord.dilution / 100),
+      ? roundToThousandths(
+          (materialsInFormula.reduce(
+            (sum, material) =>
+              sum + material.weight * (material.dilution / 100),
             0
-          )) /
-          totalWeight) *
-        100
+          ) /
+            totalWeight) *
+            100
+        )
       : 0;
 
   const scaleFormula = (newTotalWeight: number) => {
     const scalingFactor = newTotalWeight / totalWeight;
     const scaledMaterials = materialsInFormula.map((material) => ({
       ...material,
-      weight: material.weight * scalingFactor,
-    }));
-    const scaledAccords = accordsInFormula.map((accord) => ({
-      ...accord,
-      weight: accord.weight * scalingFactor,
+      weight: roundToThousandths(material.weight * scalingFactor),
     }));
     setMaterialsInFormula(scaledMaterials);
-    setAccordsInFormula(scaledAccords);
-    setSolventWeight(solventWeight * scalingFactor);
+    setSolventWeight(roundToThousandths(solventWeight * scalingFactor));
   };
 
   const handleScaleSubmit = () => {
@@ -241,20 +202,14 @@ export const FormulaPage = ({ initialData, preview }: FormulaProps) => {
 
   const scaleFormulaByDilution = (desiredDilution: number) => {
     const totalMaterialDilutionWeight = materialsInFormula.reduce(
-      (sum, selectedMaterial) =>
-        sum + selectedMaterial.weight * (selectedMaterial.dilution / 100),
+      (sum, material) => sum + material.weight * (material.dilution / 100),
       0
     );
-    const totalAccordDilutionWeight = accordsInFormula.reduce(
-      (sum, selectedAccord) =>
-        sum + selectedAccord.weight * (selectedAccord.dilution / 100),
-      0
+    const requiredTotalWeight =
+      totalMaterialDilutionWeight / (desiredDilution / 100);
+    const requiredSolventWeight = roundToThousandths(
+      requiredTotalWeight - totalMaterialWeight
     );
-    const totalDilutionWeight =
-      totalMaterialDilutionWeight + totalAccordDilutionWeight;
-    const requiredTotalWeight = totalDilutionWeight / (desiredDilution / 100);
-    const requiredSolventWeight =
-      requiredTotalWeight - totalMaterialWeight - totalAccordWeight;
 
     if (requiredSolventWeight < 0) {
       alert(
@@ -285,52 +240,110 @@ export const FormulaPage = ({ initialData, preview }: FormulaProps) => {
     });
   };
 
+  const handleSwitchChange = (checked: boolean) => {
+    setIsBase(checked);
+    update({
+      id: initialData._id,
+      isBase: checked,
+    });
+  };
+
   useEffect(() => {
     update({
       id: initialData._id,
       materialsInFormula: materialsInFormula,
-      accordsInFormula: accordsInFormula,
       solvent: { ...initialData.solvent, weight: solventWeight },
+      concentration: finalDilution,
     });
   }, [
     update,
     initialData._id,
     materialsInFormula,
-    accordsInFormula,
     solventWeight,
     initialData.solvent,
+    finalDilution,
   ]);
+
+  const calculatePureMaterialWeight = (weight: number, dilution: number) => {
+    return roundToThousandths(weight * (dilution / 100));
+  };
+
+  const ifraCompliant = (material: MaterialInFormula, totalWeight: number) => {
+    const pureMaterialWeight = calculatePureMaterialWeight(
+      material.weight,
+      material.dilution
+    );
+    const pureMaterialPercentage = roundToThousandths(
+      (pureMaterialWeight / totalWeight) * 100
+    );
+
+    if (material.ifralimit === 0) return true;
+
+    return pureMaterialPercentage <= material.ifralimit;
+  };
+
+  const [sortConfig, setSortConfig] = useState<{
+    key: "note" | "name" | "percentage";
+    direction: "ascending" | "descending";
+  } | null>(null);
 
   return (
     <div className="pl-4 group relative flex">
       <div className="flex-1 ml-4 mt-20">
-        {isEditing && !preview ? (
-          <TextareaAutosize
-            ref={inputRef}
-            onBlur={disableInput}
-            onKeyDown={onKeyDown}
-            value={value}
-            onChange={(e) => onInput(e.target.value)}
-            className="text-3xl bg-transparent font-bold break-words outline-none text-[#3F3F3F] dark:text-[#CFCFCF] resize-none"
-          />
-        ) : (
-          <div
-            onClick={enableInput}
-            className="pb-2 text-3xl font-bold break-words outline-none text-[#3F3F3F] dark:text-[#CFCFCF] "
-          >
-            {initialData.title}
+        <div className="flex items-center justify-between">
+          {isEditing && !preview ? (
+            <TextareaAutosize
+              ref={inputRef}
+              onBlur={disableInput}
+              onKeyDown={onKeyDown}
+              value={value}
+              onChange={(e) => onInput(e.target.value)}
+              className="text-3xl bg-transparent font-bold break-words outline-none text-[#3F3F3F] dark:text-[#CFCFCF] resize-none"
+            />
+          ) : (
+            <div
+              onClick={enableInput}
+              className="pb-2 text-3xl font-bold break-words outline-none text-[#3F3F3F] dark:text-[#CFCFCF]"
+            >
+              {initialData.title}
+            </div>
+          )}
+
+          <div className="flex items-center justify-center gap-2">
+            <div className="flex items-center space-x-2">
+              <Label
+                htmlFor="isBaseSwitch"
+                className={cn(isBase && "text-secondary")}
+              >
+                Accord
+              </Label>
+              <Switch
+                id="isBaseSwitch"
+                checked={isBase}
+                onCheckedChange={handleSwitchChange}
+              />
+              <Label
+                htmlFor="isBaseSwitch"
+                className={cn(!isBase && "text-secondary")}
+              >
+                Base
+              </Label>
+            </div>
           </div>
-        )}
+        </div>
 
         <div className="mt-4">
-          {(materialsInFormula.length > 0 || accordsInFormula.length > 0) && (
+          {materialsInFormula.length > 0 && (
             <div className="border shadow-sm rounded-md">
               <div className="relative w-full overflow-auto">
                 <Table className="w-full caption-bottom text-sm">
                   <TableHeader className="[&>tr]:border-b">
                     <TableRow className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
                       <TableHead className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                        Material / Accord
+                        Note
+                      </TableHead>
+                      <TableHead className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                        Material
                       </TableHead>
                       <TableHead className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
                         Weight (g)
@@ -346,37 +359,102 @@ export const FormulaPage = ({ initialData, preview }: FormulaProps) => {
                       </TableHead>
                     </TableRow>
                   </TableHeader>
+
                   <TableBody className="[&>tr:last-child]:border-0">
                     {materialsInFormula.map((selectedMaterial, index) => {
                       const material = materials?.find(
                         (m) => m._id === selectedMaterial.material
+                      );
+                      const isCompliant = ifraCompliant(
+                        selectedMaterial,
+                        totalWeight
                       );
 
                       if (!material) {
                         return null;
                       }
 
+                      const pyramidValues = material.fragrancePyramid || [];
+                      const selectedLevels = pyramidLevels.filter((level) =>
+                        pyramidValues.includes(level.value)
+                      );
+
+                      const tooltipText =
+                        selectedLevels
+                          .map((level) => level.tooltip)
+                          .join(" / ") + " Note";
+
                       return (
                         <TableRow
                           key={selectedMaterial.material}
-                          className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+                          className={cn(
+                            "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
+                            { "bg-red-100": !isCompliant }
+                          )}
                         >
                           <TableCell className="text-sm p-4 align-middle">
+                            {pyramidValues.length > 0 && (
+                              <div className="flex items-center space-x-1">
+                                <HoverCard>
+                                  <HoverCardTrigger>
+                                    <div className="flex items-center space-x-1">
+                                      {selectedLevels.map((level, index) => (
+                                        <div key={index} className="size-5">
+                                          <Image
+                                            alt={tooltipText}
+                                            height={24}
+                                            width={24}
+                                            src={level.src}
+                                          />
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </HoverCardTrigger>
+                                  <HoverCardContent className="text-sm">
+                                    {tooltipText}
+                                  </HoverCardContent>
+                                </HoverCard>
+                              </div>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-sm p-4 align-middle">
                             <div className="flex items-center">
-                              <span
-                                className="mr-2 h-2 w-2 rounded-full"
-                                style={{
-                                  backgroundColor: material.category.color,
-                                }}
-                              ></span>
-                              <HoverCard>
-                                <HoverCardTrigger>
-                                  {material.title}
-                                </HoverCardTrigger>
-                                <HoverCardContent className="text-2xl">
-                                  {material.title}
-                                </HoverCardContent>
-                              </HoverCard>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <div>{material.title}</div>
+                                </PopoverTrigger>
+                                <PopoverContent>
+                                  <div>
+                                    <span className="font-bold">
+                                    {material.title}
+                                    </span>
+                                    <div className="flex items-center mt-2 ml-1">
+                                      <span
+                                        className="mr-1 h-2 w-2 rounded-full"
+                                        style={{
+                                          backgroundColor:
+                                            material.category.color,
+                                        }}
+                                      ></span>
+                                      <span
+                                        className="text-sm font-semibold"
+                                        style={{
+                                          color: material.category.color,
+                                        }}
+                                      >
+                                        {material.category.name}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center mt-2 ml-1">
+                                      {material.description && (
+                                        <span className="text-sm">
+                                          {material.description}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </PopoverContent>
+                              </Popover>
                             </div>
                           </TableCell>
                           <TableCell className="text-sm p-4 align-middle">
@@ -438,77 +516,14 @@ export const FormulaPage = ({ initialData, preview }: FormulaProps) => {
                         </TableRow>
                       );
                     })}
-                    {accordsInFormula.map((selectedAccord, index) => {
-                      const accord = accords?.find(
-                        (a) => a._id === selectedAccord.accord
-                      );
 
-                      if (!accord) {
-                        return null;
-                      }
-
-                      return (
-                        <TableRow
-                          key={selectedAccord.accord}
-                          className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
-                        >
-                          <TableCell className="text-sm p-4 align-middle">
-                            <div className="flex items-center">
-                              <HoverCard>
-                                <HoverCardTrigger>
-                                  {accord.title}
-                                </HoverCardTrigger>
-                                <HoverCardContent className="text-2xl">
-                                  {accord.title}
-                                </HoverCardContent>
-                              </HoverCard>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-sm p-4 align-middle">
-                            <Input
-                              type="number"
-                              value={`${selectedAccord.weight}`}
-                              onChange={(e) => {
-                                const value = e.target.value;
-                                if (/^\d*\.?\d*$/.test(value)) {
-                                  updateAccordWeight(
-                                    index,
-                                    value === "" ? 0 : Number(value)
-                                  );
-                                }
-                              }}
-                            />
-                          </TableCell>
-                          <TableCell className="text-sm p-4 align-middle">
-                            {accord.concentration}%
-                          </TableCell>
-                          <TableCell className="text-sm p-4 align-middle">
-                            {totalWeight > 0
-                              ? (
-                                  (selectedAccord.weight / totalWeight) *
-                                  100
-                                ).toFixed(2)
-                              : 0}
-                            %
-                          </TableCell>
-                          <TableCell className="p-4 align-middle">
-                            <Button
-                              onClick={() => removeAccord(index)}
-                              className="rounded-full opacity-100 transition text-muted-foreground text-xs"
-                              variant="outline"
-                              size="icon"
-                            >
-                              <X className="h-3 w-3" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
                     <TableRow>
+                      <TableCell></TableCell>
                       <TableCell className="text-sm font-medium">
-                        {initialData.solvent?.name || "Solvent"}
+                        <div className="flex items-center">
+                          {initialData.solvent?.name || "Solvent"}
+                        </div>
                       </TableCell>
-
                       <TableCell className="text-sm">
                         <Input
                           type="number"
@@ -529,6 +544,7 @@ export const FormulaPage = ({ initialData, preview }: FormulaProps) => {
                       <TableCell />
                     </TableRow>
                     <TableRow>
+                      <TableCell></TableCell>
                       <TableCell className="text-sm font-bold">Final</TableCell>
                       <TableCell className="text-sm">
                         <Dialog open={scaleOpen} onOpenChange={setScaleOpen}>
@@ -605,6 +621,7 @@ export const FormulaPage = ({ initialData, preview }: FormulaProps) => {
                               <Input
                                 id="dilutionScaleInput"
                                 type="number"
+                                min={0}
                                 value={dilutionScaleValue}
                                 onChange={(e) =>
                                   setDilutionScaleValue(e.target.value)
@@ -654,19 +671,20 @@ export const FormulaPage = ({ initialData, preview }: FormulaProps) => {
                     aria-expanded={open}
                     className="w-full justify-between"
                   >
-                    + add material / accord
+                    <div className="flex justify-center items-center">
+                      <CirclePlusIcon className="size-4 mr-2" />
+                      add material
+                    </div>
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-full p-0">
                   <Command>
                     <CommandInput
-                      placeholder="Search material or accord..."
+                      placeholder="Search material..."
                       className="h-9"
                     />
                     <CommandList>
-                      <CommandEmpty>
-                        No materials or accords found.
-                      </CommandEmpty>
+                      <CommandEmpty>No materials found.</CommandEmpty>
                       <CommandGroup heading="Materials">
                         {materialsToAdd?.map((material) => {
                           const { _id, title, category } = material;
@@ -688,28 +706,6 @@ export const FormulaPage = ({ initialData, preview }: FormulaProps) => {
                                 className="mr-2 h-2 w-2 rounded-full"
                                 style={{ backgroundColor: category.color }}
                               ></span>
-                              {title}
-                            </CommandItem>
-                          );
-                        })}
-                      </CommandGroup>
-                      <CommandGroup heading="Accords">
-                        {accordsToAdd?.map((accord) => {
-                          const { _id, title } = accord;
-
-                          return (
-                            <CommandItem
-                              key={_id}
-                              value={title}
-                              onSelect={() => {
-                                const selectedAccord =
-                                  accords?.find((a) => a._id === _id) ?? null;
-                                if (selectedAccord) {
-                                  addAccord(selectedAccord);
-                                  setOpen(false);
-                                }
-                              }}
-                            >
                               {title}
                             </CommandItem>
                           );

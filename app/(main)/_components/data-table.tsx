@@ -18,6 +18,10 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  getFacetedRowModel,
+  getFacetedUniqueValues,
+} from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Trash } from "lucide-react";
@@ -29,9 +33,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Search } from "lucide-react";
-import { Spinner } from "@/components/spinner";
+import { Search, X } from "lucide-react";
 import { MixerHorizontalIcon } from "@radix-ui/react-icons";
+import { DataTableFacetedFilter } from "./data-table/data-table-faceted-filter";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -39,6 +43,8 @@ interface DataTableProps<TData, TValue> {
   filterKey: string;
   onDelete: (rows: Row<TData>[]) => void;
   disabled?: boolean;
+  categoryColumn?: keyof TData & string;
+  fragrancePyramidColumn?: keyof TData & string;
 }
 
 export function DataTable<TData, TValue>({
@@ -47,6 +53,8 @@ export function DataTable<TData, TValue>({
   filterKey,
   onDelete,
   disabled,
+  categoryColumn,
+  fragrancePyramidColumn,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -55,7 +63,10 @@ export function DataTable<TData, TValue>({
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
-
+  const [categoryOptions, setCategoryOptions] = React.useState<
+    { name: string; color: string }[]
+  >([]);
+  const [fragrancePyramidOptions, setFragrancePyramidOptions] = React.useState<string[]>([]);
   const table = useReactTable({
     data: data || [],
     columns,
@@ -67,6 +78,8 @@ export function DataTable<TData, TValue>({
     getFilteredRowModel: getFilteredRowModel(),
     onRowSelectionChange: setRowSelection,
     onColumnVisibilityChange: setColumnVisibility,
+    getFacetedRowModel: getFacetedRowModel(),
+    getFacetedUniqueValues: getFacetedUniqueValues(),
     state: {
       sorting,
       columnFilters,
@@ -75,29 +88,73 @@ export function DataTable<TData, TValue>({
     },
   });
 
-  const filteredSelectedRows = table.getFilteredSelectedRowModel?.().rows ?? [];
+  React.useEffect(() => {
+    if (data) {
+      // Category options
+      if (categoryColumn) {
+        const uniqueCategories = Array.from(
+          new Set(data.map((item) => JSON.stringify((item as any)[categoryColumn])))
+        ).map((item) => JSON.parse(item));
+        setCategoryOptions(uniqueCategories);
+      }
 
-  if (!data) {
-    return <Spinner />;
-  }
+      // Fragrance pyramid options
+      if (fragrancePyramidColumn) {
+        const allNotes = data.flatMap((item: any) => item[fragrancePyramidColumn] || []);
+        const uniqueNotes = Array.from(new Set(allNotes));
+        setFragrancePyramidOptions(uniqueNotes);
+      }
+    }
+  }, [data, categoryColumn, fragrancePyramidColumn]);
+
+  const filteredSelectedRows = table.getFilteredSelectedRowModel?.().rows ?? [];
+  const isFiltered = table.getState().columnFilters.length > 0;
 
   return (
     <div className="border shadow-sm rounded-md">
       <div className="flex items-center gap-4 border-b bg-gray-100/40 px-6 py-4 dark:bg-gray-800/40">
-        <div className="w-full flex-1">
-          <div className="relative flex">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
-            <Input
-              className="flex h-10 rounded-md border border-input px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full bg-white shadow-none appearance-none pl-8 md:w-2/3 lg:w-1/3 dark:bg-gray-950"
-              placeholder={`Search ${filterKey}...`}
-              value={
-                (table.getColumn(filterKey)?.getFilterValue() as string) ?? ""
-              }
-              onChange={(event) =>
-                table.getColumn(filterKey)?.setFilterValue(event.target.value)
-              }
-              type="search"
-            />
+        <div className="flex-1">
+          <div className="flex items-center space-x-2">
+            <div className="relative w-full md:w-2/3 lg:w-1/3">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
+              <Input
+                className="flex h-10 rounded-md border border-input px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full bg-white shadow-none appearance-none pl-8 dark:bg-gray-950"
+                placeholder={`Search ${filterKey}...`}
+                value={
+                  (table.getColumn(filterKey)?.getFilterValue() as string) ?? ""
+                }
+                onChange={(event) =>
+                  table.getColumn(filterKey)?.setFilterValue(event.target.value)
+                }
+                type="search"
+              />
+            </div>
+            {categoryColumn && table.getColumn(categoryColumn) && (
+              <DataTableFacetedFilter
+                column={table.getColumn(categoryColumn)}
+                options={categoryOptions}
+                title="Category"
+              />
+            )}
+            {fragrancePyramidColumn && table.getColumn(fragrancePyramidColumn) && (
+              <DataTableFacetedFilter
+                column={table.getColumn(fragrancePyramidColumn)}
+                options={fragrancePyramidOptions}
+                title="Fragrance Notes"
+              />
+            )}
+            {isFiltered && (
+              <Button
+                className="h-8 lg:px-3"
+                onClick={() => {
+                  table.resetColumnFilters();
+                }}
+                variant="ghost"
+              >
+                Reset
+                <X className="ml-2 size-4" />
+              </Button>
+            )}
           </div>
         </div>
         <DropdownMenu>
@@ -115,31 +172,18 @@ export function DataTable<TData, TValue>({
             {table
               .getAllColumns()
               .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                );
-              })}
+              .map((column) => (
+                <DropdownMenuCheckboxItem
+                  key={column.id}
+                  className="capitalize"
+                  checked={column.getIsVisible()}
+                  onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                >
+                  {column.id}
+                </DropdownMenuCheckboxItem>
+              ))}
           </DropdownMenuContent>
         </DropdownMenu>
-        {/* <Button
-          className="ml-auto font-normal text-xs"
-          size="sm"
-          variant="outline"
-          onClick={() => {}}
-        >
-          <Plus className="size-4 mr-2" />
-          Category
-        </Button> */}
         {filteredSelectedRows.length > 0 && (
           <Button
             disabled={disabled}

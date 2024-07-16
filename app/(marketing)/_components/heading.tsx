@@ -18,8 +18,7 @@ export const Heading = () => {
         <span className="underline">Fumez</span>
       </h1>
       <h3 className="text-base sm:text-xl md:text-2xl font-medium">
-        Fumz is a workspace for perfumers to calculate formulas and keep track
-        of them
+        Purefumez is a workspace for perfumers to calculate formulas and keep track of them
       </h3>
 
       {isLoading && (
@@ -30,7 +29,7 @@ export const Heading = () => {
       {isAuthenticated && !isLoading && (
         <Button asChild>
           <Link href="/materials">
-            Enter Fumez
+            Go to my dashboard
             <ArrowRight className="h-4 w-4 ml-2" />
           </Link>
         </Button>
@@ -38,7 +37,7 @@ export const Heading = () => {
       {!isAuthenticated && !isLoading && (
         <SignInButton mode="modal">
           <Button>
-            Get Fumez free
+            Sign in
             <ArrowRight className="h-4 w-4 ml-2" />
           </Button>
         </SignInButton>

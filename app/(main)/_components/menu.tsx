@@ -20,17 +20,17 @@ import { useMutation } from "convex/react";
 import { Button } from "@/components/ui/button";
 
 interface MenuProps {
-  documentId: Id<"documents">;
+  formulaId: Id<"formulas">;
 }
 
-export const Menu = ({ documentId }: MenuProps) => {
+export const Menu = ({ formulaId }: MenuProps) => {
   const router = useRouter();
   const { user } = useUser();
 
-  const archive = useMutation(api.documents.archive);
+  const archive = useMutation(api.formulas.archiveFormula);
 
   const onArchive = () => {
-    const promise = archive({ id: documentId });
+    const promise = archive({ id: formulaId });
 
     toast.promise(promise, {
       loading: "Moving to trash...",
@@ -38,7 +38,7 @@ export const Menu = ({ documentId }: MenuProps) => {
       error: "Failed to archive note",
     });
 
-    router.push("/documents");
+    router.push("/formulas");
   };
 
   return (

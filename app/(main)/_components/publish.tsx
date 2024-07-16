@@ -1,11 +1,9 @@
 "use client";
-"use client";
 
 import { useState } from "react";
 import { useMutation } from "convex/react";
 import { toast } from "sonner";
 import { Check, Copy, Globe } from "lucide-react";
-
 import { Doc } from "@/convex/_generated/dataModel";
 import {
   PopoverTrigger,
@@ -17,14 +15,14 @@ import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 
 interface PublishProps {
-  initialData: Doc<"documents">
+  initialData: Doc<"formulas">
 };
 
 export const Publish = ({
   initialData
 }: PublishProps) => {
   const origin = useOrigin();
-  const update = useMutation(api.documents.update);
+  const update = useMutation(api.formulas.updateFormula);
 
   const [copied, setCopied] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -76,7 +74,7 @@ export const Publish = ({
     <Popover>
       <PopoverTrigger asChild>
         <Button size="sm" variant="ghost">
-          Publish 
+          Share
           {initialData.isPublished && (
             <Globe
               className="text-sky-500 w-4 h-4 ml-2"
@@ -95,7 +93,7 @@ export const Publish = ({
             <div className="flex items-center gap-x-2">
               <Globe className="text-sky-500 animate-pulse h-4 w-4" />
               <p className="text-xs font-medium text-sky-500">
-                This note is live on web.
+                This formula is live on web.
               </p>
             </div>
             <div className="flex items-center">
@@ -131,7 +129,7 @@ export const Publish = ({
               className="h-8 w-8 text-muted-foreground mb-2"
             />
             <p className="text-sm font-medium mb-2">
-              Publish this note
+              Publish this formula
             </p>
             <span className="text-xs text-muted-foreground mb-4">
               Share your work with others.

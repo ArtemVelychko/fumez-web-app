@@ -34,27 +34,26 @@ export const Actions = ({ id }: Props) => {
   };
 
   return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger>
-          <Button variant="ghost" className="size-8 p-0">
-            <MoreHorizontal className="size-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuItem
-            disabled={!material}
-            onClick={() => material && onOpen(material)}
-          >
-            <Edit className="size-4 mr-2" />
-            Edit
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => handleDeleteMaterial(id)}>
-            <Trash className="size-4 mr-2" />
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="h-8 w-8 p-0">
+          <span className="sr-only">Open menu</span>
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem
+          disabled={!material}
+          onClick={() => material && onOpen(material)}
+        >
+          <Edit className="mr-2 h-4 w-4" />
+          <span>Edit</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleDeleteMaterial(id)}>
+          <Trash className="mr-2 h-4 w-4" />
+          <span>Delete</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
